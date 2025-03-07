@@ -1,30 +1,24 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify'
-import fp from 'fastify-plugin'
-import { Server, ServerOptions } from 'socket.io'
+import fp from "fastify-plugin";
+import { Server } from "socket.io";
+import { createServer } from "http";
 
-export type FastifySocketioOptions = Partial<ServerOptions> & {
-  preClose?: (done: Function) => void
+async function fastifySocketIO(fastify, options) {
+    if (!fastify.server) {
+        throw new Error("Fastify v5 requires an external HTTP server. Use `serverFactory`.");
+    }
+
+    // Create and attach Socket.io server
+    const io = new Server(fastify.server, options);
+
+    fastify.decorate("io", io);
+
+    fastify.addHook("onClose", async (instance, done) => {
+        io.close();
+        done();
+    });
 }
 
-const fastifySocketIO: FastifyPluginAsync<FastifySocketioOptions> = fp(
-  async function (fastify, opts: FastifySocketioOptions) {
-    function defaultPreClose(done: Function) {
-      (fastify as any).io.local.disconnectSockets(true)
-      done()
-    }
-    fastify.decorate('io', new Server(fastify.server, opts))
-    fastify.addHook('preClose', (done) => {
-      if (opts.preClose) {
-        return opts.preClose(done)
-      }
-      return defaultPreClose(done)
-    })
-    fastify.addHook('onClose', (fastify: FastifyInstance, done) => {
-      (fastify as any).io.close()
-      done()
-    })
-  },
-  { fastify: '>=4.x.x', name: 'fastify-socket.io' },
-)
-
-export default fastifySocketIO
+export default fp(fastifySocketIO, {
+    fastify: ">=5.0.0",
+    name: "fastify-socket.io"
+});
