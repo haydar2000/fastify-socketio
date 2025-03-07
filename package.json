@@ -7,7 +7,6 @@
     "build": "tsc --noEmit && tsup-node",
     "format": "rome format --write .",
     "lint": "rome check .",
-    "preinstall": "npx only-allow pnpm",
     "prepare": "husky install",
     "prepublish": "pnpm build",
     "release": "pnpm build && changeset publish",
