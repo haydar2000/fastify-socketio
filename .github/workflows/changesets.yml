@@ -59,7 +59,7 @@ jobs:
         run: pnpm build
 
       - name: Create Release Pull Request
-        uses: changesets/action@c8bada60c408975afd1a20b3db81d6eee6789308 # v1.4.9
+        uses: changesets/action@001cd79f0a536e733315164543a727bdf2d70aff # v1.5.1
         with:
           publish: pnpm release
           createGithubReleases: true
